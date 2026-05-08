@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// NextAuth.js Models
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(BEGINNER)
+  
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Lensora Relations
+  profile            Profile?
+  photoUploads       PhotoUpload[]
+  portfolioItems     PortfolioItem[]
+  inquiriesSent      Inquiry[]         @relation("ClientInquiries")
+  inquiriesReceived  Inquiry[]         @relation("ProInquiries")
+  savedPhotographers SavedPhotographer[]
+}
+
+enum Role {
+  BEGINNER
+  PRO
+  CLIENT
+  ADMIN
+}
+
+// Lensora Models
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  niche           String?
+  city            String?
+  bio             String?  @db.Text
+  experienceLevel String?
+  startingPrice   Int?
+  availability    Boolean  @default(true)
+  verified        Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PhotoUpload {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  storageUrl     String
+  status         UploadStatus    @default(PENDING)
+  
+  analysisResult AnalysisResult?
+  
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+enum UploadStatus {
+  PENDING
+  ANALYZING
+  COMPLETED
+  FAILED
+}
+
+model AnalysisResult {
+  id               String      @id @default(cuid())
+  photoId          String      @unique
+  photoUpload      PhotoUpload @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  
+  overallScore     Int
+  compositionScore Int
+  lightingScore    Int
+  storytellingScore Int
+  strengths        String[]
+  weaknesses       String[]
+  tips             String[]
+  
+  createdAt        DateTime    @default(now())
+}
+
+model PortfolioItem {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  storageUrl String
+  caption    String?
+  order      Int      @default(0)
+  
+  createdAt  DateTime @default(now())
+}
+
+model Inquiry {
+  id          String        @id @default(cuid())
+  clientId    String
+  client      User          @relation("ClientInquiries", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  proId       String
+  pro         User          @relation("ProInquiries", fields: [proId], references: [id], onDelete: Cascade)
+  
+  message     String        @db.Text
+  eventDate   DateTime?
+  status      InquiryStatus @default(PENDING)
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+enum InquiryStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
+model SavedPhotographer {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    User     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  proId     String
+  // We just store the ID here instead of a relation to avoid complex cyclic relations, 
+  // or we can add the relation back. Let's add the relation back but to User.
+  
+  createdAt DateTime @default(now())
+
+  @@unique([clientId, proId])
+}
