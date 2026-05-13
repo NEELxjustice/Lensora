@@ -21,8 +21,12 @@ export async function Sidebar() {
     case Role.PRO:
       links = [
         { name: "Dashboard", href: "/dashboard/pro", icon: LayoutDashboard },
-        { name: "My Profile", href: "/dashboard/pro/profile", icon: User },
-        { name: "Leads Inbox", href: "/dashboard/pro/inbox", icon: CheckCircle },
+        { name: "Portfolio Intelligence", href: "/dashboard/pro/profile", icon: Camera },
+        { name: "Client Leads", href: "/dashboard/pro/inbox", icon: CheckCircle },
+        { name: "Marketplace", href: "/marketplace", icon: Users },
+        { name: "Analytics", href: "/dashboard/pro/analytics", icon: BarChart },
+        { name: "Projects", href: "/dashboard/pro/projects", icon: LayoutDashboard },
+        { name: "Messages", href: "/dashboard/pro/messages", icon: User },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
       ]
       break

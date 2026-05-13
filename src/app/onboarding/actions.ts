@@ -21,7 +21,10 @@ export async function selectUserRole(formData: FormData) {
   // Update user in DB
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { role: role as Role }
+    data: { 
+      role: role as Role,
+      onboardingCompleted: true
+    }
   })
 
   // We should redirect to the appropriate dashboard

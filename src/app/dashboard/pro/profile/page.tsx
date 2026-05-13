@@ -1,95 +1,73 @@
-import { auth } from "@/auth"
-import prisma from "@/lib/prisma"
-import { updateProProfileAction } from "./actions"
+"use client"
+
+import { PageHeader } from "@/components/ui/PageHeader"
+import { motion } from "framer-motion"
+import { User, ShieldCheck, MapPin, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export default async function ProProfilePage() {
-  const session = await auth()
-  
-  if (!session?.user?.id) return null
-
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session.user.id }
-  })
-
+export default function ProProfilePage() {
   return (
-    <div className="space-y-8 max-w-3xl">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-serif">Profile Builder</h1>
-        <p className="text-zinc-400">Complete your profile to attract top clients in the marketplace.</p>
+    <div className="space-y-12">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-8">
+        <PageHeader 
+          title="Professional Identity" 
+          subtitle="Manage how you appear to elite brands and clients in the Lensora ecosystem."
+        />
+        <Button className="bg-amber-500 hover:bg-amber-600 text-white h-12 px-8 rounded-full text-xs font-bold uppercase tracking-widest mb-12">
+          Edit Profile
+        </Button>
       </div>
 
-      <div className="p-8 rounded-2xl bg-[#111111] border border-zinc-800">
-        <form action={updateProProfileAction} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Niche</label>
-              <input 
-                name="niche"
-                defaultValue={profile?.niche || ""}
-                placeholder="e.g. Wedding, Fashion, Product"
-                className="w-full bg-[#161616] border border-zinc-800 rounded-lg p-3 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
-                required
-              />
+      <div className="grid lg:grid-cols-3 gap-8">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="lg:col-span-1 p-8 rounded-[2.5rem] bg-zinc-900 text-white space-y-8"
+        >
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-32 h-32 rounded-full bg-zinc-800 border-4 border-zinc-700 flex items-center justify-center relative">
+              <User size={48} className="text-zinc-500" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 bg-amber-500 rounded-full border-4 border-zinc-900 flex items-center justify-center">
+                <ShieldCheck size={14} className="text-white" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">City</label>
-              <input 
-                name="city"
-                defaultValue={profile?.city || ""}
-                placeholder="e.g. New York, London"
-                className="w-full bg-[#161616] border border-zinc-800 rounded-lg p-3 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
-                required
-              />
+            <div className="space-y-1">
+              <h3 className="text-2xl font-serif">Pro Creator</h3>
+              <p className="text-[10px] uppercase tracking-widest text-amber-500 font-bold">Verified Professional</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Experience Level</label>
-              <select 
-                name="experienceLevel"
-                defaultValue={profile?.experienceLevel || ""}
-                className="w-full bg-[#161616] border border-zinc-800 rounded-lg p-3 text-zinc-100 focus:outline-none focus:border-zinc-500"
-                required
-              >
-                <option value="" disabled>Select level...</option>
-                <option value="Emerging">Emerging</option>
-                <option value="Established">Established</option>
-                <option value="Expert">Expert</option>
-              </select>
+          <div className="space-y-4 pt-8 border-t border-zinc-800">
+            <div className="flex items-center gap-3 text-zinc-400 text-sm">
+              <MapPin size={16} /> <span>New York, USA</span>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Starting Price ($)</label>
-              <input 
-                name="startingPrice"
-                type="number"
-                defaultValue={profile?.startingPrice || ""}
-                placeholder="e.g. 500"
-                className="w-full bg-[#161616] border border-zinc-800 rounded-lg p-3 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
-                required
-              />
+            <div className="flex items-center gap-3 text-zinc-400 text-sm">
+              <ExternalLink size={16} /> <span>portfolio.lensora.ai</span>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2 p-10 rounded-[2.5rem] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 space-y-10"
+        >
+          <div className="space-y-4">
+            <h4 className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Portfolio Preview</h4>
+            <div className="grid grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="aspect-square bg-zinc-50 dark:bg-zinc-800 rounded-2xl animate-pulse" />
+              ))}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-300">Bio</label>
-            <textarea 
-              name="bio"
-              defaultValue={profile?.bio || ""}
-              placeholder="Tell clients about your style, approach, and background..."
-              rows={5}
-              className="w-full bg-[#161616] border border-zinc-800 rounded-lg p-3 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
-              required
-            />
+          <div className="space-y-4 pt-10 border-t border-zinc-100 dark:border-white/5">
+            <h4 className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Creative Bio</h4>
+            <p className="text-zinc-500 dark:text-zinc-400 font-light leading-relaxed italic">
+              "No bio added yet. Tell the world about your unique creative perspective and technical mastery."
+            </p>
           </div>
-
-          <div className="pt-4 flex justify-end">
-            <Button type="submit" className="bg-amber-500 hover:bg-amber-600 text-black px-8">
-              Save Profile
-            </Button>
-          </div>
-        </form>
+        </motion.div>
       </div>
     </div>
   )

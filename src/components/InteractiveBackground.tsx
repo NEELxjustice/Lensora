@@ -26,7 +26,7 @@ export const InteractiveBackground = () => {
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden [perspective:1200px]">
       {/* Dynamic Cursor Spotlight */}
       <motion.div
-        className="absolute w-[800px] h-[800px] bg-amber-500/5 rounded-full blur-[120px] mix-blend-screen"
+        className="absolute w-[800px] h-[800px] bg-amber-500/[0.07] rounded-full blur-[120px]"
         style={{
           x: mouseXSpring,
           y: mouseYSpring,
@@ -37,7 +37,7 @@ export const InteractiveBackground = () => {
       />
 
       {/* Floating Photography Elements in 3D Space */}
-      <div className="absolute inset-0 opacity-10 [transform-style:preserve-3d]">
+      <div className="absolute inset-0 opacity-[0.15] [transform-style:preserve-3d]">
         {[...Array(8)].map((_, i) => (
           <FloatingElement key={i} index={i} />
         ))}
@@ -45,11 +45,11 @@ export const InteractiveBackground = () => {
 
       {/* 3D Light Streaks */}
       <motion.div
-        className="absolute w-[600px] h-[1px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent rotate-45 blur-md"
+        className="absolute w-[600px] h-[1px] bg-gradient-to-r from-transparent via-amber-500/20 to-transparent rotate-45 blur-md"
         animate={{
           x: [-200, 200, -200],
           y: [0, -100, 0],
-          opacity: [0.05, 0.2, 0.05],
+          opacity: [0.1, 0.3, 0.1],
           translateZ: ["50px", "150px", "50px"]
         }}
         transition={{
@@ -67,6 +67,14 @@ export const InteractiveBackground = () => {
 }
 
 const FloatingElement = ({ index }: { index: number }) => {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
   const x = Math.random() * 100
   const y = Math.random() * 100
   const z = -200 + Math.random() * 400

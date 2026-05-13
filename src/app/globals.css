@@ -119,13 +119,13 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 transition-colors duration-300;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-500;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
   }
 }
 
@@ -165,5 +165,36 @@
 
   .mask-radial {
     mask-image: radial-gradient(circle, black, transparent 70%);
+  }
+
+  .bg-matte-black {
+    background-color: #050505;
+  }
+
+  .bg-charcoal {
+    background-color: #0d0d0d;
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.3);
+  }
+
+  .glass-morphism {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif), serif;
+  }
+
+  .cinematic-shadow {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  .grain-overlay {
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    mix-blend-mode: overlay;
   }
 }

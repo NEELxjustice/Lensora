@@ -15,34 +15,35 @@ const roleRoutes = {
 export default auth((req) => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
-  const userRole = req.auth?.user?.role as string | undefined
+  const user = req.auth?.user
+  // @ts-ignore
+  const onboardingCompleted = user?.onboardingCompleted as boolean | undefined
+  const userRole = user?.role as string | undefined
 
-  // Protect all /dashboard routes and /admin
   const isProtectedRoute = nextUrl.pathname.startsWith("/dashboard") || nextUrl.pathname.startsWith("/admin")
   const isOnboardingRoute = nextUrl.pathname === "/onboarding"
+  const isAuthRoute = nextUrl.pathname === "/login" || nextUrl.pathname === "/register"
 
+  // 1. Handle Protected Routes
   if (isProtectedRoute) {
     if (!isLoggedIn) {
-      // Redirect to login if not logged in
-      return NextResponse.redirect(new URL("/api/auth/signin", nextUrl))
+      return NextResponse.redirect(new URL("/login", nextUrl))
     }
 
-    // Determine which dashboard they are trying to access
+    if (!onboardingCompleted) {
+      return NextResponse.redirect(new URL("/onboarding", nextUrl))
+    }
+
+    // Role-based access control
     let requiredRole = null
     for (const [route, role] of Object.entries(roleRoutes)) {
-      if (nextUrl.pathname.startsWith(route)) {
+      if (nextUrl.pathname.startsWith(role === "BEGINNER" ? "/dashboard/beginner" : route)) {
         requiredRole = role
         break
       }
     }
 
     if (requiredRole && userRole !== requiredRole) {
-      // User is trying to access a dashboard they don't have access to
-      // Redirect them to their proper dashboard or onboarding
-      if (!userRole) {
-        return NextResponse.redirect(new URL("/onboarding", nextUrl))
-      }
-      
       const correctDashboard = Object.entries(roleRoutes).find(([_, r]) => r === userRole)?.[0]
       if (correctDashboard) {
         return NextResponse.redirect(new URL(correctDashboard, nextUrl))
@@ -50,10 +51,26 @@ export default auth((req) => {
     }
   }
 
-  // If they are on onboarding but already have a role (and maybe it's not the default BEGINNER role if they completed it)
-  // Actually, we should probably check a flag or just let them be, but for MVP:
-  if (isOnboardingRoute && !isLoggedIn) {
-    return NextResponse.redirect(new URL("/api/auth/signin", nextUrl))
+  // 2. Handle Onboarding Route
+  if (isOnboardingRoute) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/login", nextUrl))
+    }
+
+    if (onboardingCompleted) {
+      const correctDashboard = Object.entries(roleRoutes).find(([_, r]) => r === userRole)?.[0] || "/dashboard/beginner"
+      return NextResponse.redirect(new URL(correctDashboard, nextUrl))
+    }
+  }
+
+  // 3. Handle Auth Routes (prevent logged in users from seeing login)
+  if (isAuthRoute && isLoggedIn) {
+    if (onboardingCompleted) {
+      const correctDashboard = Object.entries(roleRoutes).find(([_, r]) => r === userRole)?.[0] || "/dashboard/beginner"
+      return NextResponse.redirect(new URL(correctDashboard, nextUrl))
+    } else {
+      return NextResponse.redirect(new URL("/onboarding", nextUrl))
+    }
   }
 
   return NextResponse.next()

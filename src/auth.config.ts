@@ -7,11 +7,18 @@ export const authConfig = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
         // @ts-ignore
         token.role = user.role
+        // @ts-ignore
+        token.onboardingCompleted = user.onboardingCompleted
+      }
+      // Handle session updates (e.g. after onboarding)
+      if (trigger === "update" && session) {
+        token.role = session.role
+        token.onboardingCompleted = session.onboardingCompleted
       }
       return token
     },
@@ -20,6 +27,8 @@ export const authConfig = {
         session.user.id = token.id as string
         // @ts-ignore
         session.user.role = token.role as string
+        // @ts-ignore
+        session.user.onboardingCompleted = token.onboardingCompleted as boolean
       }
       return session
     },
